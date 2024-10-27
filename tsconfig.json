@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"]
+    },
+    "target": "es2016",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*" // Adjust this path to match where your TypeScript files are located
+, "src/lib"  ],
+  "exclude": [
+    "node_modules", // It's common to exclude node_modules
+    "**/*.spec.ts" // Optionally exclude test files
+  ]
+}
