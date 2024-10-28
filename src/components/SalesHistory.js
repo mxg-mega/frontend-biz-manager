@@ -12,6 +12,7 @@ const SalesHistoryPage = () => {
   const [filterCategory, setFilterCategory] = useState('All');
   const [salesData, setSalesData] = useState([]);
 
+
   useEffect(() => {
     fetchSalesData();
   }, [dateRange, filterCategory]);
@@ -63,6 +64,7 @@ const SalesHistoryPage = () => {
   // Calculate total sales and average sales from the data
   const totalSales = salesData.reduce((sum, sale) => sum + (sale.total_price || 0), 0);
   const averageSales = salesData.length > 0 ? totalSales / salesData.length : 0;
+  const totalProfit = salesData.reduce((sum, sale) => sum + (sale.profit || 0), 0);
 
   // Export function for Excel and PDF formats
   const handleExport = (format) => {
@@ -74,9 +76,9 @@ const SalesHistoryPage = () => {
     } else if (format === 'pdf') {
       const doc = new jsPDF();
       doc.text('Sales Data', 10, 10);
-      const tableData = salesData.map(sale => [sale.date, sale.total_price, sale.category, sale.product_name]);
+      const tableData = salesData.map(sale => [sale.date, sale.product_name, sale.quantity_sold, sale.total_price, sale.total_cost_price, sale.profit, sale.category, ]);
       doc.autoTable({
-        head: [['Date', 'Total Sales', 'Category', 'Products']],
+        head: [['Date', 'Products', 'Quantity Sold', 'Total Sales', 'Total Cost', 'Profit', 'Category', ]],
         body: tableData,
         startY: 20,
       });
@@ -143,7 +145,12 @@ const SalesHistoryPage = () => {
           <h3 style={{ fontSize: '1rem', color: 'gray' }}>Average Daily Sales</h3>
           <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>${averageSales.toFixed(2)}</p>
         </div>
+        <div style={{ flex: 1, backgroundColor: 'white', padding: '1rem', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
+          <h3 style={{ fontSize: '1rem', color: 'gray' }}>Total Profit</h3>
+          <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>${totalProfit.toFixed(2)}</p>
+        </div>
       </div>
+
 
       {/* Sales Data Chart */}
       <div style={{ backgroundColor: 'white', padding: '1rem', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', marginBottom: '1rem', height: '400px' }}>
@@ -166,18 +173,25 @@ const SalesHistoryPage = () => {
           <thead>
             <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
               <th style={{ textAlign: 'left', padding: '0.75rem' }}>Date</th>
-              <th style={{ textAlign: 'left', padding: '0.75rem' }}>Total Sales</th>
-              <th style={{ textAlign: 'left', padding: '0.75rem' }}>Category</th>
               <th style={{ textAlign: 'left', padding: '0.75rem' }}>Products</th>
+              <th style={{ textAlign: 'left', padding: '0.75rem' }}>Sales Price</th>
+              <th style={{ textAlign: 'left', padding: '0.75rem' }}>Cost Price</th>
+              <th style={{ textAlign: 'left', padding: '0.75rem' }}>Quantity Sold</th>
+              <th style={{ textAlign: 'left', padding: '0.75rem' }}>Profit</th>
+              <th style={{ textAlign: 'left', padding: '0.75rem' }}>Category</th>
+              
             </tr>
           </thead>
           <tbody>
             {salesData.map((sale, index) => (
               <tr key={index} style={{ borderBottom: '1px solid #e2e8f0' }}>
                 <td style={{ padding: '0.75rem' }}>{sale.date}</td>
-                <td style={{ padding: '0.75rem' }}>${sale.total_price ? sale.total_price.toFixed(2) : 'N/A'}</td>
-                <td style={{ padding: '0.75rem' }}>{sale.category}</td>
                 <td style={{ padding: '0.75rem' }}>{sale.product_name ? (Array.isArray(sale.product_name) ? sale.product_name.join(', ') : sale.product_name) : 'N/A'}</td>
+                <td style={{ padding: '0.75rem' }}>${sale.total_price ? sale.total_price.toFixed(2) : 'N/A'}</td>
+                <td style={{ padding: '0.75rem' }}>${sale.total_cost_price ? sale.total_cost_price.toFixed(2) : 'N/A'}</td>
+                <td style={{ padding: '0.75rem' }}>{sale.quantity_sold ? sale.quantity_sold.toFixed(2) : 'N/A'}</td>
+                <td style={{ padding: '0.75rem' }}>${sale.profit ? sale.profit.toFixed(2) : 'N/A'}</td>
+                <td style={{ padding: '0.75rem' }}>{sale.category}</td>
               </tr>
             ))}
           </tbody>
