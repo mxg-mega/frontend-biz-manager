@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { DollarSign, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/Select";
+import { formatCurrency } from '../lib/utils';
 
 const generateMonthlyData = () => {
   return Array.from({ length: 12 }, (_, i) => ({

@@ -6,6 +6,7 @@ import { Input } from "./ui/Input";
 import { Label } from "./ui/Label";
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
+import { formatCurrency } from '../lib/utils';
 
 const SalesEntryPage = () => {
   const [cart, setCart] = useState([]);
@@ -94,7 +95,7 @@ const SalesEntryPage = () => {
                 <Card key={product.id}>
                   <CardContent className="p-4">
                     <h3 className="font-bold">{product.name}</h3>
-                    <p className="mb-2">${product.price.toFixed(2)}</p>
+                    <p className="mb-2">{formatCurrency(product.price.toFixed(2))}</p>
                     <Button onClick={() => addToCart(product)} className="w-full">
                       Add to Cart
                     </Button>
@@ -118,7 +119,7 @@ const SalesEntryPage = () => {
               <div key={item.id} className="flex justify-between items-center mb-4 p-2 bg-gray-100 rounded">
                 <div>
                   <h3 className="font-bold">{item.name}</h3>
-                  <p>${item.price.toFixed(2)}</p>
+                  <p>{formatCurrency(item.price.toFixed(2))}</p>
                 </div>
                 <div className="flex items-center">
                   <Button variant="outline" size="icon" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
@@ -134,15 +135,15 @@ const SalesEntryPage = () => {
             <div className="mt-4 border-t pt-4">
               <div className="flex justify-between mb-2">
                 <span>Subtotal:</span>
-                <span>${total.toFixed(2)}</span>
+                <span>{formatCurrency(total.toFixed(2))}</span>
               </div>
               <div className="flex justify-between mb-2 font-bold">
                 <span>Total:</span>
-                <span>${total.toFixed(2)}</span>
+                <span>{formatCurrency(total.toFixed(2))}</span>
               </div>
               <div className="flex justify-between mb-2 text-green-600">
                 <span>Profit:</span>
-                <span>${profit.toFixed(2)}</span>
+                <span>{formatCurrency(profit.toFixed(2))}</span>
               </div>
             </div>
             <Button onClick={handleProceedToCheckout} className="w-full mt-4" disabled={cart.length === 0}>

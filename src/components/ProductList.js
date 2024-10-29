@@ -2,20 +2,22 @@ import { Link } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import { Search, Edit, Trash2 } from 'lucide-react';
 import api from '../api';
-
-
+import { formatCurrency } from '../lib/utils';
 
 const ProductListPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState([]);
+  const [errorMessage, setErrorMessage] = useState(''); // Error message state
 
   useEffect(() => {
     api.get('/products')
       .then((response) => {
         setProducts(response.data);
+        setErrorMessage(''); // Clear any error message on successful fetch
       })
       .catch((error) => {
         console.error("Error fetching products:", error);
+        setErrorMessage('Failed to load products. Please try again later.');
       });
   }, []);
 
@@ -25,11 +27,17 @@ const ProductListPage = () => {
 
   const handleDelete = (id) => {
     api.delete(`/products/${id}`)
-      .then(() => {
-        setProducts(products.filter(product => product.id !== id));
+      .then((response) => {
+        if (response.status !== 200 && response.status !== 201) {
+          setErrorMessage("Could not delete the product. Please try again.");
+        } else {
+          setProducts(products.filter(product => product.id !== id));
+          setErrorMessage(''); // Clear any previous error message on successful delete
+        }
       })
       .catch((error) => {
         console.error("Error deleting product:", error);
+        setErrorMessage("Could not delete the product. Please try again.");
       });
   };
 
@@ -54,7 +62,7 @@ const ProductListPage = () => {
           <div>
             <p style={{ fontSize: '0.875rem', color: 'gray' }}>Total Value</p>
             <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
-              ${products.reduce((sum, product) => sum + (product.price * product.quantity), 0).toFixed(2)}
+              {formatCurrency(products.reduce((sum, product) => sum + (product.price * product.quantity), 0).toFixed(2))}
             </p>
           </div>
         </div>
@@ -77,6 +85,13 @@ const ProductListPage = () => {
         </Link>
       </div>
 
+      {/* Error Message */}
+      {errorMessage && (
+        <div style={{ marginBottom: '1rem', color: 'red', fontWeight: 'bold' }}>
+          {errorMessage}
+        </div>
+      )}
+
       {/* Product List */}
       <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '1rem', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -94,11 +109,13 @@ const ProductListPage = () => {
               <tr key={product.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
                 <td style={{ padding: '0.75rem' }}>{product.name}</td>
                 <td style={{ padding: '0.75rem' }}>{product.category}</td>
-                <td style={{ padding: '0.75rem' }}>${product.price.toFixed(2)}</td>
+                <td style={{ padding: '0.75rem' }}>{formatCurrency(product.price.toFixed(2))}</td>
                 <td style={{ padding: '0.75rem' }}>{product.quantity}</td>
                 <td style={{ padding: '0.75rem' }}>
                   <button style={{ marginRight: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>
-                    <Edit size={16} />
+                    <Link to={`/products/${product.id}/edit`}>
+                      <Edit size={16} />
+                    </Link>
                   </button>
                   <button onClick={() => handleDelete(product.id)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
                     <Trash2 size={16} />

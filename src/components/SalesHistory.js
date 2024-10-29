@@ -6,6 +6,7 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import api from '../api';
+import { formatCurrency } from '../lib/utils';
 
 const SalesHistoryPage = () => {
   const [dateRange, setDateRange] = useState('Today');
@@ -139,15 +140,15 @@ const SalesHistoryPage = () => {
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
         <div style={{ flex: 1, backgroundColor: 'white', padding: '1rem', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
           <h3 style={{ fontSize: '1rem', color: 'gray' }}>Total Sales</h3>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>${totalSales.toFixed(2)}</p>
+          <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{formatCurrency(totalSales.toFixed(2))}</p>
         </div>
         <div style={{ flex: 1, backgroundColor: 'white', padding: '1rem', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
           <h3 style={{ fontSize: '1rem', color: 'gray' }}>Average Daily Sales</h3>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>${averageSales.toFixed(2)}</p>
+          <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{formatCurrency(averageSales.toFixed(2))}</p>
         </div>
         <div style={{ flex: 1, backgroundColor: 'white', padding: '1rem', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
           <h3 style={{ fontSize: '1rem', color: 'gray' }}>Total Profit</h3>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>${totalProfit.toFixed(2)}</p>
+          <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{formatCurrency(totalProfit.toFixed(2))}</p>
         </div>
       </div>
 
@@ -187,10 +188,10 @@ const SalesHistoryPage = () => {
               <tr key={index} style={{ borderBottom: '1px solid #e2e8f0' }}>
                 <td style={{ padding: '0.75rem' }}>{sale.date}</td>
                 <td style={{ padding: '0.75rem' }}>{sale.product_name ? (Array.isArray(sale.product_name) ? sale.product_name.join(', ') : sale.product_name) : 'N/A'}</td>
-                <td style={{ padding: '0.75rem' }}>${sale.total_price ? sale.total_price.toFixed(2) : 'N/A'}</td>
-                <td style={{ padding: '0.75rem' }}>${sale.total_cost_price ? sale.total_cost_price.toFixed(2) : 'N/A'}</td>
+                <td style={{ padding: '0.75rem' }}>{sale.total_price ? formatCurrency(sale.total_price.toFixed(2)) : 'N/A'}</td>
+                <td style={{ padding: '0.75rem' }}>{sale.total_cost_price ? formatCurrency(sale.total_cost_price.toFixed(2)) : 'N/A'}</td>
                 <td style={{ padding: '0.75rem' }}>{sale.quantity_sold ? sale.quantity_sold.toFixed(2) : 'N/A'}</td>
-                <td style={{ padding: '0.75rem' }}>${sale.profit ? sale.profit.toFixed(2) : 'N/A'}</td>
+                <td style={{ padding: '0.75rem' }}>{sale.profit ? formatCurrency(sale.profit.toFixed(2)) : 'N/A'}</td>
                 <td style={{ padding: '0.75rem' }}>{sale.category}</td>
               </tr>
             ))}

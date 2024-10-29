@@ -14,6 +14,7 @@ import SettingsPage from './components/SettingsPage';
 import CheckoutAndReceiptPage from './components/CheckoutAndReceiptPage';
 import UserUpdate from './components/UserUpdate';
 import UserRegistration from './components/UserRegistration';
+import ProductEditPage from './components/ProductEditPage';
 
 const App = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -81,6 +82,7 @@ const App = () => {
               <Route path="/checkout" element={isAuthenticated ? <CheckoutAndReceiptPage /> : <Navigate to="/login" />} />
               <Route path="/users/:userId/edit" element={isAuthenticated ? <UserUpdate /> : <Navigate to="/login" />} />
               <Route path="/users/user-registration" element={isAuthenticated ? <UserRegistration /> : <Navigate to="/login" />} />
+              <Route path="/products/:id/edit" element={<ProductEditPage />} />
             </Routes>
           </div>
         </main>

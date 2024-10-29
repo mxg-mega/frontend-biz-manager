@@ -109,7 +109,7 @@ const ProductRegistration = () => {
                       type="number"
                       value={product.price}
                       onChange={handleInputChange}
-                      placeholder="0.00"
+                      placeholder="₦0.00"
                       className="pl-8"
                       required
                     />

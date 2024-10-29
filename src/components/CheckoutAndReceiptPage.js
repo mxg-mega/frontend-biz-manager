@@ -7,6 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import api from '../api';
+import { formatCurrency } from '../lib/utils';
 
 const CheckoutAndReceiptPage = () => {
     const location = useLocation();
@@ -75,8 +76,8 @@ const CheckoutAndReceiptPage = () => {
         const tableData = cartItems.map(item => [
           item.name,
           item.quantity,
-          `$${item.price.toFixed(2)}`,
-          `$${(item.price * item.quantity).toFixed(2)}`
+          `${formatCurrency(item.price.toFixed(2))}`,
+          `${formatCurrency((item.price * item.quantity).toFixed(2))}`
         ]);
 
         doc.autoTable({
@@ -85,7 +86,7 @@ const CheckoutAndReceiptPage = () => {
           startY: 35,
         });
         const finalY = doc.lastAutoTable.finalY || 35;
-        doc.text(`Total: $${total.toFixed(2)}`, 14, finalY + 10);
+        doc.text(`Total: ${formatCurrency(total.toFixed(2))}`, 14, finalY + 10);
         doc.text('Thank you for your purchase!', 105, finalY + 25, { align: 'center' });
 
         doc.save('receipt.pdf');
@@ -108,15 +109,15 @@ const CheckoutAndReceiptPage = () => {
                   <h3 className="font-bold mt-4 mb-2">Items Purchased:</h3>
                   {cartItems.map(item => (
                     <div key={item.id} className="flex justify-between">
-                      <span>{item.name} x{item.quantity}</span>
-                      <span>${(item.price * item.quantity).toFixed(2)}</span>
+                      <span>{item.name} x {item.quantity}</span>
+                      <span> {formatCurrency((item.price * item.quantity).toFixed(2))}</span>
                     </div>
                   ))}
                 </div>
                 <div className="total">
                   <div className="flex justify-between font-bold">
                     <span>Total:</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>{formatCurrency(total.toFixed(2))}</span>
                   </div>
                 </div>
                 <p className="footer">
@@ -154,7 +155,7 @@ const CheckoutAndReceiptPage = () => {
               cartItems.map(item => (
                 <div key={item.id} className="flex justify-between items-center mb-2">
                   <span>{item.name} x{item.quantity}</span>
-                  <span>${(item.price * item.quantity).toFixed(2)}</span>
+                  <span>{formatCurrency((item.price * item.quantity).toFixed(2))}</span>
                 </div>
               ))
             ) : (
@@ -163,7 +164,7 @@ const CheckoutAndReceiptPage = () => {
             <div className="border-t pt-2 mt-2">
               <div className="flex justify-between font-bold">
                 <span>Total:</span>
-                <span>${total.toFixed(2)}</span>
+                <span>{formatCurrency(total.toFixed(2))}</span>
               </div>
             </div>
           </CardContent>
