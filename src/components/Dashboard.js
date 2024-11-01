@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import api from '../api';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
+import { formatCurrency } from '../lib/utils';
 
 const Dashboard = () => {
   const [products, setProducts] = useState([]);
@@ -19,22 +20,42 @@ const Dashboard = () => {
         console.error("Error fetching products:", error);
       });
 
-    // Fetch sales and update daily sales and profit (mocked data for now)
-    setDailySales(500);  // Replace with actual data from API
-    setDailyProfit(150);  // Replace with actual data from API
+    // Fetch daily sales data
+    api.get('/sales/daily')
+      .then((response) => {
+        setDailySales(response.data.totalSales);
+      })
+      .catch((error) => {
+        console.error("Error fetching daily sales:", error);
+      });
 
-    // Mocked monthly data (replace with API data)
-    setMonthlyData([
-      { month: 'Jan', sales: 10000, profit: 4000 },
-      { month: 'Feb', sales: 8000, profit: 3000 },
-      { month: 'Mar', sales: 12000, profit: 5000 },
-      // Add more months...
-    ]);
+    // Fetch daily profit data
+    api.get('/sales/profit')
+      .then((response) => {
+        setDailyProfit(response.data.totalProfit);
+      })
+      .catch((error) => {
+        console.error("Error fetching daily profit:", error);
+      });
+
+    // Fetch monthly sales and profit data for the chart
+    api.get('/sales/monthly')
+      .then((response) => {
+        const formattedMonthlyData = response.data.map((item) => ({
+          month: item.month,
+          sales: item.totalSales,
+          profit: item.totalProfit,
+        }));
+        setMonthlyData(formattedMonthlyData);
+      })
+      .catch((error) => {
+        console.error("Error fetching monthly data:", error);
+      });
   }, []);
 
   return (
     <div className="dashboard">
-      <h1 className="text-3xl font-bold mb-6">Hello and Welcome to the Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-6">Welcome to your Dashboard</h1>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -51,7 +72,7 @@ const Dashboard = () => {
             <CardTitle>Daily Sales</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">${dailySales}</p>
+            <p className="text-3xl font-bold">{formatCurrency(dailySales)}</p>
           </CardContent>
         </Card>
         <Card>
@@ -59,7 +80,7 @@ const Dashboard = () => {
             <CardTitle>Daily Profit</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">${dailyProfit}</p>
+            <p className="text-3xl font-bold">{formatCurrency(dailyProfit)}</p>
           </CardContent>
         </Card>
       </div>
