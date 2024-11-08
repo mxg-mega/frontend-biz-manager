@@ -15,7 +15,7 @@ const AppBar = ({ setSidebarOpen, onLogout }) => {
   return (
     <header className="flex justify-between items-center p-4 bg-white border-b">
       <Button variant="ghost" className="md:hidden" onClick={() => setSidebarOpen(prev => !prev)}>
-        <Menu className="h-6 w-6" />
+        <Menu className="h-8 w-8" />
       </Button>
       <h1 className="text-xl font-bold">Business Management System</h1>
       <div className="relative">
@@ -36,7 +36,7 @@ const AppBar = ({ setSidebarOpen, onLogout }) => {
               </li>
               <li>
                 <button
-                  className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                  className="block w-full text-left px-4 py-2 text-red-500 hover:bg-red-100"
                   onClick={handleLogout} // Call handleLogout on click
                 >
                   Logout

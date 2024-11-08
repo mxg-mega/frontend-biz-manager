@@ -22,7 +22,10 @@ const LoginPage = ({ onLogin }) => {
       const response = await api.post('/login', { username, password });
       // Assuming the API returns a token and a role
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('username', response.data.username);
+      localStorage.setItem('id', response.data.id);
       const userRole = response.data['role'];
+      const user_id = response.data['id'];
       console.log(userRole) // Extract role from response
       onLogin(userRole); // Call the onLogin prop with the user role
       navigate(userRole === 'admin' ? '/dashboard' : '/sales'); // Redirect based on role

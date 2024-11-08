@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/Input";
 import { Label } from "./ui/Label";
+import { Alert, AlertDescription } from "./ui/alert"
+import api from '../api';
 
 const SettingsPage = () => {
   const [settings, setSettings] = useState({
@@ -11,18 +13,65 @@ const SettingsPage = () => {
     password: '',
     role: 'admin'
   });
-  
+
+  const userId = localStorage.getItem('id');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get(`/users/${userId}`);
+        const userData = response.data;
+        setSettings(prevUser => ({
+          ...prevUser,
+          name: userData.username,
+          role: userData.role
+        }));
+      } catch (err) {
+        setError('Failed to fetch user data');
+        console.error('Error fetching user data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [userId]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSettings({ ...settings, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically send the updated settings to your backend
-    console.log('Settings updated:', settings);
+    try {
+      setLoading(true);
+      // Send a PUT request to update user settings
+      const response = await api.put(`/users/${userId}`, {
+        username: settings.name,
+        password: settings.password, // Include password only if it's updated
+        role: settings.role
+      });
+
+      // Handle success response
+      if (response.status === 200) {
+        alert('Settings updated successfully!');
+        // fetch the user data again to reflect the changes
+        // fetchUser();
+      }
+    } catch (err) {
+      setError('Failed to update user settings');
+      console.error('Error updating user settings:', err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>;
 
   return (
     <div className="p-4 max-w-2xl mx-auto">

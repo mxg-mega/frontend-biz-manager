@@ -1,32 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { DollarSign, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/Select";
 import { formatCurrency } from '../lib/utils';
-
-const generateMonthlyData = () => {
-  return Array.from({ length: 12 }, (_, i) => ({
-    month: new Date(0, i).toLocaleString('default', { month: 'short' }),
-    revenue: Math.floor(Math.random() * 20000) + 10000,
-    expenses: Math.floor(Math.random() * 15000) + 5000,
-    profit: Math.floor(Math.random() * 10000),
-  }));
-};
-
-const generateDailyData = () => {
-  return {
-    revenue: Math.floor(Math.random() * 2000) + 500,
-    expenses: Math.floor(Math.random() * 1500) + 300,
-    profit: Math.floor(Math.random() * 1000) + 100,
-  };
-};
+import api from '../api';
 
 const ProfitLossSummary = () => {
   const [timeFrame, setTimeFrame] = useState('yearly');
-  const [financialData] = useState(generateMonthlyData());
-  const [dailyData] = useState(generateDailyData());
+  const [financialData, setFinancialData] = useState([]); // Monthly data
+  const [dailyData, setDailyData] = useState({ revenue: 0, expenses: 0, profit: 0 });
 
+  useEffect(() => {
+    // Fetch monthly financial data for the chart
+    api.get('/sales/monthly')
+      .then((response) => {
+        const formattedData = response.data.map((item) => ({
+          month: item.month,
+          revenue: item.totalSales,
+          expenses: item.totalCost,  
+          profit: item.totalProfit,
+        }));
+        setFinancialData(formattedData);
+      })
+      .catch((error) => {
+        console.error("Error fetching monthly financial data:", error);
+      });
+
+    // Fetch daily financial data
+    api.get('/sales/daily')
+      .then((response) => {
+        setDailyData({
+          revenue: response.data.totalSales,
+          expenses: response.data.totalCost,  // Adjust based on your API response
+          profit: response.data.totalProfit,
+        });
+      })
+      .catch((error) => {
+        console.error("Error fetching daily financial data:", error);
+      });
+  }, []);
+
+  // Calculate total revenue, expenses, and profit for the selected timeframe
   const totalRevenue = financialData.reduce((sum, data) => sum + data.revenue, 0);
   const totalExpenses = financialData.reduce((sum, data) => sum + data.expenses, 0);
   const totalProfit = totalRevenue - totalExpenses;
@@ -57,15 +72,15 @@ const ProfitLossSummary = () => {
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Revenue</p>
-                <p className="text-2xl font-bold">${dailyData.revenue.toLocaleString()}</p>
+                <p className="text-2xl font-bold">{formatCurrency(dailyData.revenue)}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Expenses</p>
-                <p className="text-2xl font-bold">${dailyData.expenses.toLocaleString()}</p>
+                <p className="text-2xl font-bold">{formatCurrency(dailyData.expenses)}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Profit</p>
-                <p className="text-2xl font-bold">${dailyData.profit.toLocaleString()}</p>
+                <p className="text-2xl font-bold">{formatCurrency(dailyData.profit)}</p>
               </div>
             </div>
           </CardContent>
@@ -78,15 +93,15 @@ const ProfitLossSummary = () => {
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Total Revenue</p>
-                <p className="text-2xl font-bold">${totalRevenue.toLocaleString()}</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalRevenue)}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Expenses</p>
-                <p className="text-2xl font-bold">${totalExpenses.toLocaleString()}</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalExpenses)}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Net Profit</p>
-                <p className="text-2xl font-bold">${totalProfit.toLocaleString()}</p>
+                <p className="text-2xl font-bold">{formatCurrency(totalProfit)}</p>
               </div>
             </div>
           </CardContent>

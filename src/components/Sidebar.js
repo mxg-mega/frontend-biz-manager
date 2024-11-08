@@ -35,14 +35,14 @@ const Sidebar = ({ onClose, isMobile, onLogout, isAdmin }) => {
       <div className="flex items-center justify-center h-20 shadow-md">
         <h1 className="text-2xl font-bold text-blue-500">BizManager</h1>
       </div>
-      <nav className="overflow-y-auto h-[calc(100vh-8rem)]">
+      <nav className="overflow-y-auto h-[calc(110vh-16rem)]">
         {filteredNavItems.map((item) => (
           <Button
             key={item.name}
             variant="ghost"
             className={`w-full justify-start my-2 ${
               location.pathname === item.link ? 'bg-blue-500 text-white' : 'text-gray-300'
-            }`}
+            } ${item.name === 'Logout' ? 'hover:bg-red-500' : ''}`}
             onClick={() => {
               if (item.action) {
                 item.action(); // Call the action for Logout

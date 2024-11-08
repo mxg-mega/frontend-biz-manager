@@ -13,6 +13,7 @@ const ProductEditPage = () => {
     name: '',
     category: '',
     price: '',
+    cost_price: '',
     quantity: '',
     description: ''
   });
@@ -122,6 +123,22 @@ const ProductEditPage = () => {
                   type="number"
                   name="price"
                   value={formData.price}
+                  onChange={handleChange}
+                  step="0.01"
+                  min="0"
+                  className="w-full p-2 border rounded-md"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Cost Price (₦)
+                </label>
+                <input
+                  type="number"
+                  name="cost_price"
+                  value={formData.cost_price}
                   onChange={handleChange}
                   step="0.01"
                   min="0"

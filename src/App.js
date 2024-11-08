@@ -35,6 +35,9 @@ const App = () => {
     setIsAuthenticated(false);
     setIsAdmin(false);
     localStorage.removeItem('token'); // Clear token
+    localStorage.removeItem('username');
+    localStorage.removeItem('role');
+    localStorage.removeItem('id');
     navigate('/login'); // Redirect to login page
   };
 

@@ -30,7 +30,7 @@ const Dashboard = () => {
       });
 
     // Fetch daily profit data
-    api.get('/sales/profit')
+    api.get('/sales/daily')
       .then((response) => {
         setDailyProfit(response.data.totalProfit);
       })
