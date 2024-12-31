@@ -46,7 +46,8 @@ const UserRegistration = () => {
             const registrationData = {
                 username: user.username,
                 role: user.role,
-                password: user.password
+                password: user.password,
+                business_id: localStorage.getItem('business_id'),
             };
             await api.post('/users', registrationData);
             setSuccess(true);

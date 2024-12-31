@@ -1,24 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Calendar, Download, Filter } from 'lucide-react';
+import { Calendar, Download, Filter, Trash2 } from 'lucide-react';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import api from '../api';
 import { formatCurrency } from '../lib/utils';
+import { Pagination } from "./ui/Pagination";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
 
 const SalesHistoryPage = () => {
   const [dateRange, setDateRange] = useState('Today');
   const [filterCategory, setFilterCategory] = useState('All');
   const [salesData, setSalesData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [saleToDelete, setSaleToDelete] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
 
   useEffect(() => {
     fetchSalesData();
-  }, [dateRange, filterCategory]);
+  }, [dateRange, filterCategory, currentPage]);
 
   const fetchSalesData = () => {
+    setIsLoading(true);
     let startDate, endDate;
     const today = new Date();
 
@@ -48,24 +57,55 @@ const SalesHistoryPage = () => {
         endDate = '';
     }
 
-    api.get('/sales/report', { params: { start_date: startDate, end_date: endDate, business_id: localStorage.getItem('business_id') } })
+    api.get('/sales/report', {params: {
+      start_date: startDate,
+      end_date: endDate,
+      business_id: localStorage.getItem('business_id'),
+      page: currentPage,
+      per_page: itemsPerPage
+    }})
       .then((response) => {
-        let filteredData = response.data;
+        let filteredData = response.data.sales;
         if (filterCategory !== 'All') {
           filteredData = filteredData.filter(sale => sale.category === filterCategory);
         }
-        console.log('Sales Data:', filteredData);
         setSalesData(filteredData);
+        setTotalPages(Math.ceil(response.data.total / itemsPerPage));
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error('Error fetching sales data:', error);
+        setSalesData([]);
+        setIsLoading(false);
       });
   };
 
+  const handleDeleteClick = (sale) => {
+    setSaleToDelete(sale);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!saleToDelete) return;
+
+    try {
+      await api.delete(`/sales/${saleToDelete.id}`, {
+        params: { business_id: localStorage.getItem('business_id') }
+      });
+      
+      // Refresh the data
+      fetchSalesData();
+      setDeleteDialogOpen(false);
+      setSaleToDelete(null);
+    } catch (error) {
+      console.error('Error deleting sale:', error);
+    }
+  };
+
   // Calculate total sales and average sales from the data
-  const totalSales = salesData.reduce((sum, sale) => sum + (sale.total_price || 0), 0);
-  const averageSales = salesData.length > 0 ? totalSales / salesData.length : 0;
-  const totalProfit = salesData.reduce((sum, sale) => sum + (sale.profit || 0), 0);
+  const totalSales = salesData ? salesData.reduce((sum, sale) => sum + (sale.total_price || 0), 0) : 0;
+  const averageSales = salesData && salesData.length > 0 ? totalSales / salesData.length : 0;
+  const totalProfit = salesData ? salesData.reduce((sum, sale) => sum + (sale.profit || 0), 0) : 0;
 
   // Export function for Excel and PDF formats
   const handleExport = (format) => {
@@ -87,18 +127,22 @@ const SalesHistoryPage = () => {
     }
   };
 
-  return (
-    <div style={{ padding: '1rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>Sales History</h1>
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
-      {/* Filter and export controls */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Calendar style={{ marginRight: '0.5rem' }} />
+  return (
+    <div className="p-4 max-w-7xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Sales History</h1>
+
+      {/* Filters and Controls */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div className="flex items-center">
+          <Calendar className="mr-2" />
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+            className="w-full p-2 border rounded"
           >
             <option>Today</option>
             <option>This Week</option>
@@ -107,12 +151,13 @@ const SalesHistoryPage = () => {
             <option>This Year</option>
           </select>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Filter style={{ marginRight: '0.5rem' }} />
+        
+        <div className="flex items-center">
+          <Filter className="mr-2" />
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+            className="w-full p-2 border rounded"
           >
             <option>All</option>
             <option>electronics</option>
@@ -120,41 +165,42 @@ const SalesHistoryPage = () => {
             <option>appliances</option>
           </select>
         </div>
+
         <button
           onClick={() => handleExport('excel')}
-          style={{ display: 'flex', alignItems: 'center', padding: '0.5rem 1rem', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginRight: '0.5rem' }}
+          className="flex items-center justify-center p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
-          <Download style={{ marginRight: '0.5rem' }} />
+          <Download className="mr-2" />
           Export to Excel
         </button>
+
         <button
           onClick={() => handleExport('pdf')}
-          style={{ display: 'flex', alignItems: 'center', padding: '0.5rem 1rem', backgroundColor: '#3498db', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+          className="flex items-center justify-center p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
-          <Download style={{ marginRight: '0.5rem' }} />
+          <Download className="mr-2" />
           Export to PDF
         </button>
       </div>
 
-      {/* Total Sales and Average Sales Summary */}
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-        <div style={{ flex: 1, backgroundColor: 'white', padding: '1rem', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
-          <h3 style={{ fontSize: '1rem', color: 'gray' }}>Total Sales</h3>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{formatCurrency(totalSales.toFixed(2))}</p>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-gray-600">Total Sales</h3>
+          <p className="text-xl font-bold">{formatCurrency(totalSales.toFixed(2))}</p>
         </div>
-        <div style={{ flex: 1, backgroundColor: 'white', padding: '1rem', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
-          <h3 style={{ fontSize: '1rem', color: 'gray' }}>Average Daily Sales</h3>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{formatCurrency(averageSales.toFixed(2))}</p>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-gray-600">Average Daily Sales</h3>
+          <p className="text-xl font-bold">{formatCurrency(averageSales.toFixed(2))}</p>
         </div>
-        <div style={{ flex: 1, backgroundColor: 'white', padding: '1rem', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
-          <h3 style={{ fontSize: '1rem', color: 'gray' }}>Total Profit</h3>
-          <p style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{formatCurrency(totalProfit.toFixed(2))}</p>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-gray-600">Total Profit</h3>
+          <p className="text-xl font-bold">{formatCurrency(totalProfit.toFixed(2))}</p>
         </div>
       </div>
 
-
-      {/* Sales Data Chart */}
-      <div style={{ backgroundColor: 'white', padding: '1rem', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)', marginBottom: '1rem', height: '400px' }}>
+      {/* Sales Chart */}
+      <div className="bg-white p-4 rounded-lg shadow mb-4 h-96">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={salesData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -162,44 +208,80 @@ const SalesHistoryPage = () => {
             <YAxis />
             <Tooltip />
             <Legend />
-            <Line type="monotone" dataKey="total_price" stroke="#8884d8" /> {/* Corrected data key for total sales */}
+            <Line type="monotone" dataKey="total_price" stroke="#8884d8" />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Recent Sales Table */}
-      <div style={{ backgroundColor: 'white', padding: '1rem', borderRadius: '8px', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>Recent Sales</h2>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      {/* Sales Table */}
+      <div className="bg-white p-4 rounded-lg shadow overflow-x-auto">
+        <h2 className="text-xl font-bold mb-4">Recent Sales</h2>
+        <table className="w-full min-w-[800px]">
           <thead>
-            <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-              <th style={{ textAlign: 'left', padding: '0.75rem' }}>Date</th>
-              <th style={{ textAlign: 'left', padding: '0.75rem' }}>Products</th>
-              <th style={{ textAlign: 'left', padding: '0.75rem' }}>Sales Price</th>
-              <th style={{ textAlign: 'left', padding: '0.75rem' }}>Cost Price</th>
-              <th style={{ textAlign: 'left', padding: '0.75rem' }}>Quantity Sold</th>
-              <th style={{ textAlign: 'left', padding: '0.75rem' }}>Profit</th>
-              <th style={{ textAlign: 'left', padding: '0.75rem' }}>Category</th>
-              
+            <tr className="border-b">
+              <th className="text-left p-3">Date</th>
+              <th className="text-left p-3">Products</th>
+              <th className="text-left p-3">Sales Price</th>
+              <th className="text-left p-3">Cost Price</th>
+              <th className="text-left p-3">Quantity</th>
+              <th className="text-left p-3">Profit</th>
+              <th className="text-left p-3">Category</th>
+              <th className="text-left p-3">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {salesData.map((sale, index) => (
-              <tr key={index} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                <td style={{ padding: '0.75rem' }}>{sale.date}</td>
-                <td style={{ padding: '0.75rem' }}>{sale.product_name ? (Array.isArray(sale.product_name) ? sale.product_name.join(', ') : sale.product_name) : 'N/A'}</td>
-                <td style={{ padding: '0.75rem' }}>{sale.total_price ? formatCurrency(sale.total_price.toFixed(2)) : 'N/A'}</td>
-                <td style={{ padding: '0.75rem' }}>{sale.total_cost_price ? formatCurrency(sale.total_cost_price.toFixed(2)) : 'N/A'}</td>
-                <td style={{ padding: '0.75rem' }}>{sale.quantity_sold ? sale.quantity_sold.toFixed(2) : 'N/A'}</td>
-                <td style={{ padding: '0.75rem' }}>{sale.profit ? formatCurrency(sale.profit.toFixed(2)) : 'N/A'}</td>
-                <td style={{ padding: '0.75rem' }}>{sale.category}</td>
+            {salesData && salesData.map((sale, index) => (
+              <tr key={index} className="border-b">
+                <td className="p-3">{sale.date}</td>
+                <td className="p-3">{sale.product_name ? (Array.isArray(sale.product_name) ? sale.product_name.join(', ') : sale.product_name) : 'N/A'}</td>
+                <td className="p-3">{formatCurrency(sale.total_price?.toFixed(2) ?? 'N/A')}</td>
+                <td className="p-3">{formatCurrency(sale.total_cost_price?.toFixed(2) ?? 'N/A')}</td>
+                <td className="p-3">{sale.quantity_sold?.toFixed(2) ?? 'N/A'}</td>
+                <td className="p-3">{formatCurrency(sale.profit?.toFixed(2) ?? 'N/A')}</td>
+                <td className="p-3">{sale.category}</td>
+                <td className="p-3">
+                  <button
+                    onClick={() => handleDeleteClick(sale)}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded"
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+
+        {/* Pagination */}
+        <div className="mt-4 flex justify-center">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Delete</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this sale? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
+
 
 export default SalesHistoryPage;

@@ -52,13 +52,31 @@ const SalesEntryPage = () => {
   };
 
   const updateQuantity = (productId, newQuantity) => {
-    if (newQuantity === 0) {
+    // Convert to number and handle invalid inputs
+    const quantity = parseInt(newQuantity) || 0;
+    
+    // Ensure quantity is not negative
+    if (quantity < 0) return;
+    
+    if (quantity === 0) {
       removeFromCart(productId);
     } else {
-      setCart(cart.map(item =>
-        item.id === productId ? { ...item, quantity: newQuantity } : item
-      ));
+      const product = products.find(p => p.id === productId);
+      if (product && quantity <= product.quantity) {
+        setCart(cart.map(item =>
+          item.id === productId ? { ...item, quantity } : item
+        ));
+      } else {
+        // Optional: Add error handling for exceeding available stock
+        alert(`Maximum available quantity is ${product.quantity}`);
+      }
     }
+  };
+
+  const handleQuantityInputChange = (productId, value) => {
+    // Remove any non-numeric characters
+    const cleanValue = value.replace(/[^\d]/g, '');
+    updateQuantity(productId, cleanValue);
   };
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -101,8 +119,13 @@ const SalesEntryPage = () => {
                 <Card key={product.id}>
                   <CardContent className="p-4">
                     <h3 className="font-bold">{product.name}</h3>
+                    <p className="text-sm text-gray-600">Stock: {product.quantity}</p>
                     <p className="mb-2">{formatCurrency(product.price.toFixed(2))}</p>
-                    <Button onClick={() => addToCart(product)} className="w-full">
+                    <Button 
+                      onClick={() => addToCart(product)} 
+                      className="w-full"
+                      disabled={product.quantity === 0}
+                    >
                       Add to Cart
                     </Button>
                   </CardContent>
@@ -127,12 +150,27 @@ const SalesEntryPage = () => {
                   <h3 className="font-bold">{item.name}</h3>
                   <p>{formatCurrency(item.price.toFixed(2))}</p>
                 </div>
-                <div className="flex items-center">
-                  <Button variant="outline" size="icon" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                <div className="flex items-center space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                  >
                     <Minus size={16} />
                   </Button>
-                  <span className="mx-2">{item.quantity}</span>
-                  <Button variant="outline" size="icon" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                  <Input
+                    type="text"
+                    value={item.quantity}
+                    onChange={(e) => handleQuantityInputChange(item.id, e.target.value)}
+                    className="w-16 text-center"
+                    min="1"
+                  />
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    disabled={item.quantity >= products.find(p => p.id === item.id)?.quantity}
+                  >
                     <Plus size={16} />
                   </Button>
                 </div>
@@ -152,7 +190,11 @@ const SalesEntryPage = () => {
                 <span>{formatCurrency(profit.toFixed(2))}</span>
               </div>
             </div>
-            <Button onClick={handleProceedToCheckout} className="w-full mt-4" disabled={cart.length === 0}>
+            <Button 
+              onClick={handleProceedToCheckout} 
+              className="w-full mt-4" 
+              disabled={cart.length === 0}
+            >
               Proceed to Checkout
             </Button>
           </CardContent>

@@ -15,7 +15,7 @@ const Users = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await api.get('/users');
+        const response = await api.get('/users', { params: { business_id: localStorage.getItem('business_id') } });
         setUsers(response.data);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -54,7 +54,7 @@ const Users = () => {
     <div className="container mx-auto px-6 py-8">
       <h2 className="text-3xl font-semibold mb-4">Users</h2>
       <div className="flex justify-end mb-4">
-        <Button variant="default" onClick={handleAddUser }>Add New User</Button>
+        <Button variant="default" onClick={handleAddUser}>Add New User</Button>
       </div>
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
         <Table>
