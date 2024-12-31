@@ -12,7 +12,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     // Fetch products and update total products count
-    api.get('/products')
+    api.get(`/products/list/${localStorage.getItem('business_id')}`)
       .then((response) => {
         setProducts(response.data);
       })

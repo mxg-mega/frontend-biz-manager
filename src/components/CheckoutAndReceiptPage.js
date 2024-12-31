@@ -23,7 +23,8 @@ const CheckoutAndReceiptPage = () => {
             product_id: item.id,
             quantity_sold: item.quantity,
             total_price: item.price * item.quantity,
-            profit: (item.price - item.costPrice) * item.quantity
+            profit: (item.price - item.costPrice) * item.quantity,
+            business_id: localStorage.getItem('business_id')
           }));
         
           api.post('/sales', { items: saleData })

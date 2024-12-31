@@ -38,6 +38,7 @@ const App = () => {
     localStorage.removeItem('username');
     localStorage.removeItem('role');
     localStorage.removeItem('id');
+    localStorage.removeItem('business_id');
     navigate('/login'); // Redirect to login page
   };
 

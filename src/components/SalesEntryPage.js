@@ -15,13 +15,19 @@ const SalesEntryPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    api.get('/products')
-      .then((response) => {
-        setProducts(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching products:", error);
-      });
+    const business_id = localStorage.getItem("business_id");
+
+    if (business_id) {
+      api.get(`/products/list/${business_id}`)
+        .then((response) => {
+          setProducts(response.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching products:", error);
+        });
+    } else {
+      console.error("Business ID not found in localStorage");
+    }
   }, []);
 
   const filteredProducts = useMemo(() => {

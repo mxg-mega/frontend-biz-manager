@@ -18,7 +18,7 @@ const ProfitLossSummary = () => {
         const formattedData = response.data.map((item) => ({
           month: item.month,
           revenue: item.totalSales,
-          expenses: item.totalCost,  
+          expenses: item.totalCost,
           profit: item.totalProfit,
         }));
         setFinancialData(formattedData);

@@ -10,15 +10,19 @@ const ProductListPage = () => {
   const [errorMessage, setErrorMessage] = useState(''); // Error message state
 
   useEffect(() => {
-    api.get('/products')
+    const business_id = localStorage.getItem("business_id");
+    console.log("BID: %d", business_id)
+    if (business_id) {
+      api.get(`/products/list/${business_id}`)
       .then((response) => {
         setProducts(response.data);
-        setErrorMessage(''); // Clear any error message on successful fetch
+        setErrorMessage('');
       })
       .catch((error) => {
         console.error("Error fetching products:", error);
         setErrorMessage('Failed to load products. Please try again later.');
       });
+    } else { console.error("BUSINESS  ID MUST BE INCLUDED"); }
   }, []);
 
   const filteredProducts = products.filter(product =>

@@ -21,6 +21,7 @@ const ProductRegistration = () => {
     cost_price: '',
     quantity: '',
     category: '',
+    business_id: localStorage.getItem('business_id'),
   });
 
   useEffect(() => {
