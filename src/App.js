@@ -15,6 +15,7 @@ import CheckoutAndReceiptPage from './components/CheckoutAndReceiptPage';
 import UserUpdate from './components/UserUpdate';
 import UserRegistration from './components/UserRegistration';
 import ProductEditPage from './components/ProductEditPage';
+import SignupPage from './components/SignupPage'
 
 const App = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -74,6 +75,7 @@ const App = () => {
           <div className="container mx-auto px-6 py-8">
             <Routes>
               <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+              <Route path="/signup" element={<SignupPage onLogin={handleLogin} />} />
               <Route path="/" element={<Navigate to="/login" />} /> {/* Default route to login */}
               <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
               <Route path="/products" element={isAuthenticated ? <ProductList /> : <Navigate to="/login" />} />

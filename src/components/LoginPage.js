@@ -1,10 +1,10 @@
 // src/components/LoginPage.js
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from "./ui/button";
 import { Input } from "./ui/Input";
 import { Label } from "./ui/Label";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "./ui/Card";
 import { Alert, AlertDescription } from "./ui/alert";
 import api from '../api';
 
@@ -20,18 +20,15 @@ const LoginPage = ({ onLogin }) => {
 
     try {
       const response = await api.post('/login', { username, password });
-      // Assuming the API returns a token and a role
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('username', response.data.username);
-      localStorage.setItem('id', response.data['id']);
-      localStorage.setItem('business_id', response.data['business_id']);
-      localStorage.setItem('role', response.data['role']);
-      console.log('bid: %d', localStorage.getItem("business_id"))
-      const userRole = response.data['role'];
-      const user_id = response.data['id'];
-      console.log(userRole) // Extract role from response
-      onLogin(userRole); // Call the onLogin prop with the user role
-      navigate(userRole === 'admin' ? '/dashboard' : '/sales'); // Redirect based on role
+      localStorage.setItem('id', response.data.id);
+      localStorage.setItem('business_id', response.data.business_id);
+      localStorage.setItem('role', response.data.role);
+      
+      const userRole = response.data.role;
+      onLogin(userRole);
+      navigate(userRole === 'admin' ? '/dashboard' : '/sales');
     } catch (err) {
       setError('Invalid username or password');
       console.error('Login error:', err);
@@ -78,6 +75,14 @@ const LoginPage = ({ onLogin }) => {
             </Button>
           </form>
         </CardContent>
+        <CardFooter className="flex justify-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Link to="/signup" className="text-blue-600 hover:text-blue-800">
+              Sign up
+            </Link>
+          </p>
+        </CardFooter>
       </Card>
     </div>
   );
