@@ -21,7 +21,7 @@ const Dashboard = () => {
       });
 
     // Fetch daily sales data
-    api.get('/sales/daily')
+    api.get('/sales/daily', { params: { business_id: localStorage.getItem('business_id') } })
       .then((response) => {
         setDailySales(response.data.totalSales);
       })
@@ -30,7 +30,7 @@ const Dashboard = () => {
       });
 
     // Fetch daily profit data
-    api.get('/sales/daily')
+    api.get('/sales/daily', { params: { business_id: localStorage.getItem('business_id') } })
       .then((response) => {
         setDailyProfit(response.data.totalProfit);
       })
@@ -39,7 +39,7 @@ const Dashboard = () => {
       });
 
     // Fetch monthly sales and profit data for the chart
-    api.get('/sales/monthly')
+    api.get('/sales/monthly', { params: { business_id: localStorage.getItem('business_id') } })
       .then((response) => {
         const formattedMonthlyData = response.data.map((item) => ({
           month: item.month,

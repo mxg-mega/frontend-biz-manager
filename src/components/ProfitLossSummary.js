@@ -13,7 +13,7 @@ const ProfitLossSummary = () => {
 
   useEffect(() => {
     // Fetch monthly financial data for the chart
-    api.get('/sales/monthly')
+    api.get('/sales/monthly', { params: { business_id: localStorage.getItem('business_id') } })
       .then((response) => {
         const formattedData = response.data.map((item) => ({
           month: item.month,
@@ -28,7 +28,7 @@ const ProfitLossSummary = () => {
       });
 
     // Fetch daily financial data
-    api.get('/sales/daily')
+    api.get('/sales/daily', { params: { business_id: localStorage.getItem('business_id') } })
       .then((response) => {
         setDailyData({
           revenue: response.data.totalSales,
@@ -49,7 +49,7 @@ const ProfitLossSummary = () => {
   return (
     <div className="p-4 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Profit/Loss Summary</h1>
-      
+
       <div className="mb-6">
         <Select onValueChange={(value) => setTimeFrame(value)} defaultValue={timeFrame}>
           <SelectTrigger className="w-[180px]">

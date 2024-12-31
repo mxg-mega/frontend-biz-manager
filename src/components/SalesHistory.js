@@ -48,7 +48,7 @@ const SalesHistoryPage = () => {
         endDate = '';
     }
 
-    api.get('/sales/report', { params: { start_date: startDate, end_date: endDate } })
+    api.get('/sales/report', { params: { start_date: startDate, end_date: endDate, business_id: localStorage.getItem('business_id') } })
       .then((response) => {
         let filteredData = response.data;
         if (filterCategory !== 'All') {
