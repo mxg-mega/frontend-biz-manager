@@ -26,7 +26,7 @@ const ProductRegistration = () => {
 
   useEffect(() => {
     // Fetch the total products and categories from your backend
-    api.get('/products/summary') 
+    api.get('/products/summary', { params: { business_id: localStorage.getItem('business_id') } }) 
       .then((response) => {
         setTotalProducts(response.data.totalProducts);
         setTotalCategories(response.data.totalCategories);
