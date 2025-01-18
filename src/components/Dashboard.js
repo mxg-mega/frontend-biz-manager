@@ -20,7 +20,7 @@ const Dashboard = () => {
         console.error("Error fetching products:", error);
       });
 
-    // Fetch daily sales data
+    // Fetch daily sales datas
     api.get('/sales/daily', { params: { business_id: localStorage.getItem('business_id') } })
       .then((response) => {
         setDailySales(response.data.totalSales);
